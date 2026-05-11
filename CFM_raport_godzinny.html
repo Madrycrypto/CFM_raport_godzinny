@@ -211,6 +211,7 @@ textarea { font-size:15px; font-weight:400; font-family:var(--fb); letter-spacin
       <button class="counter-btn" onclick="adjustQty(1)">+</button>
     </div>
   </div>
+  <div id="qtyHint" style="display:none; font-size:11px; color:#5b9bd5; margin-top:5px; padding:4px 10px; background:rgba(26,110,216,0.08); border:1px solid rgba(26,110,216,0.2); border-radius:20px; display:inline-block;"></div>
 
   <!-- POWÓD OPÓŹNIENIA -->
   <div class="field">
@@ -357,7 +358,19 @@ window.onload = function() {
   var st = localStorage.getItem('cfm_station');
   if (op) { document.getElementById('operatorSel').value = op; document.getElementById('remOperator').style.display = 'inline-flex'; }
   if (st) { document.getElementById('stationSel').value = st; document.getElementById('remStation').style.display = 'inline-flex'; }
-  document.getElementById('qtyInput').value = '';
+  // Podpowiedz ostatnią ilość jeśli nie jest to pierwsza godzina (7:00-8:00)
+  var lastQty = localStorage.getItem('cfm_last_qty');
+  var lastHour = localStorage.getItem('cfm_last_qty_hour');
+  var autoIdx = getAutoHour();
+  var isFirstHour = (autoIdx === 0); // 7:00-8:00 = indeks 0
+  if (lastQty && !isFirstHour) {
+    document.getElementById('qtyInput').value = lastQty;
+    document.getElementById('qtyHint').textContent = 'Ostatnio: ' + lastQty + ' szt. (' + (lastHour || '?') + ') · 上次：' + lastQty + '件';
+    document.getElementById('qtyHint').style.display = 'block';
+  } else {
+    document.getElementById('qtyInput').value = '';
+    document.getElementById('qtyHint').style.display = 'none';
+  }
   document.getElementById('ngInput').value = '';
 };
 
@@ -400,7 +413,8 @@ function submitForm() {
   var hasRealIds = Object.values(ENTRY).every(function(v) { return !v.includes('_ID'); });
 
   if (!hasRealIds) {
-    // Tryb demo – pokaż co byłoby wysłane
+    localStorage.setItem('cfm_last_qty', qty);
+    localStorage.setItem('cfm_last_qty_hour', hour);
     showSuccess(operator, station, hour, qty, ng);
     showToast('⚠ Tryb demo – brak entry IDs', 'err');
     return;
@@ -436,6 +450,8 @@ function submitForm() {
   document.body.appendChild(form);
 
   iframe.onload = function() {
+    localStorage.setItem('cfm_last_qty', qty);
+    localStorage.setItem('cfm_last_qty_hour', hour);
     showSuccess(operator, station, hour, qty, ng);
     document.body.removeChild(iframe);
     document.body.removeChild(form);
@@ -454,7 +470,20 @@ function showSuccess(op, st, hr, qty, ng) {
 
 function resetForm() {
   document.getElementById('successScreen').classList.remove('show');
-  document.getElementById('qtyInput').value = '';
+  // Podpowiedz ostatnią ilość przy następnym raporcie
+  var lastQty = localStorage.getItem('cfm_last_qty');
+  var lastHour = localStorage.getItem('cfm_last_qty_hour');
+  var autoIdx = getAutoHour();
+  var isFirstHour = (autoIdx === 0);
+  if (lastQty && !isFirstHour) {
+    document.getElementById('qtyInput').value = lastQty;
+    var hint = document.getElementById('qtyHint');
+    hint.textContent = 'Ostatnio: ' + lastQty + ' szt. (' + (lastHour || '?') + ') · 上次：' + lastQty + '件';
+    hint.style.display = 'inline-block';
+  } else {
+    document.getElementById('qtyInput').value = '';
+    document.getElementById('qtyHint').style.display = 'none';
+  }
   document.getElementById('ngInput').value = '';
   document.getElementById('delayInput').value = '';
   document.getElementById('ngReasonInput').value = '';
