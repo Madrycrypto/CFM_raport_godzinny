@@ -364,9 +364,9 @@ window.onload = function() {
   var autoIdx = getAutoHour();
   var isFirstHour = (autoIdx === 0); // 7:00-8:00 = indeks 0
   if (lastQty && !isFirstHour) {
-    document.getElementById('qtyInput').value = lastQty;
+    document.getElementById('qtyInput').value = '';
     document.getElementById('qtyHint').textContent = 'Ostatnio: ' + lastQty + ' szt. (' + (lastHour || '?') + ') · 上次：' + lastQty + '件';
-    document.getElementById('qtyHint').style.display = 'block';
+    document.getElementById('qtyHint').style.display = 'inline-block';
   } else {
     document.getElementById('qtyInput').value = '';
     document.getElementById('qtyHint').style.display = 'none';
@@ -476,7 +476,7 @@ function resetForm() {
   var autoIdx = getAutoHour();
   var isFirstHour = (autoIdx === 0);
   if (lastQty && !isFirstHour) {
-    document.getElementById('qtyInput').value = lastQty;
+    document.getElementById('qtyInput').value = '';
     var hint = document.getElementById('qtyHint');
     hint.textContent = 'Ostatnio: ' + lastQty + ' szt. (' + (lastHour || '?') + ') · 上次：' + lastQty + '件';
     hint.style.display = 'inline-block';
